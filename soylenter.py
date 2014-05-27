@@ -50,6 +50,59 @@ class Ingredient:
 		self.sodium = float(raw_input("Sodium (g): "))
 		self.sulfur = float(raw_input("Sulfur (g): "))
 		self.zinc = float(raw_input("Zinc (mg): "))
+		
+		self.nutrition = [
+			self.calories,
+			self.carbohydrates,
+			self.protein,
+			self.total_fat,
+			self.saturated_fat,
+			self.monounsaturated_fat,
+			self.polyunsaturated_fat,
+			self.omega3_fatty_acids,
+			self.omega6_fatty_acids,
+			self.total_fiber,
+			self.soluble_fiber,
+			self.insoluble_fiber,
+			self.cholesterol,
+			self.vitamin_a,
+			self.vitamin_b6,
+			self.vitamin_b12,
+			self.vitamin_c,
+			self.vitamin_d,
+			self.vitamin_e,
+			self.vitamin_k,
+			self.thiamin,
+			self.riboflavin,
+			self.niacin,
+			self.folate,
+			self.pantothenic_acid,
+			self.biotin,
+			self.choline,
+			self.calcium,
+			self.chloride,
+			self.chromium,
+			self.copper,
+			self.iodine,
+			self.iron,
+			self.magnesium,
+			self.manganese,
+			self.molybdenum,
+			self.phosphorus,
+			self.potassium,
+			self.selenium,
+			self.sodium,
+			self.sulfur,
+			self.zinc,
+		]
+		
+		try:
+			db.ladd("Ingredients", self)
+		except:
+			db.lcreate("Ingredients")
+			db.ladd("Ingredients", self)
+			
+		db.dump()
 
 class Recipe:
 	pass
