@@ -1,14 +1,56 @@
-global_dri = None
-
 class Attribute():
-	def __init__(self, name, minimum=0, maximum=9999999):
+	def __init__(self, name, minimum=0, maximum=9999999, target=0):
 		self.name = name
 		self.minimum = minimum
 		self.maximum = maximum
+		self.target = target
 
 class DRI:
 	def __init__(self, name):
-		pass
+		# custom to me; needs to be abstracted!
+		self.name = "Josh.0"
+		self.calories = Attribute("Calories", target=2000)
+		self.carbohydrates = Attribute("Carbohydrates", target=129)
+		self.protein = Attribute("Protein", target=207)
+		self.total_fat = Attribute("Total fat", target=80)
+		self.saturated_fat = Attribute("Saturated fat", target=25)
+		self.monounsaturated_fat = Attribute("Monounsaturated fat", target=25)
+		self.polyunsaturated_fat = Attribute("Polyunsaturated fat", target=25)
+		self.omega3_fatty_acids = Attribute("Omega-3 fatty acids", target=1.6)
+		self.omega6_fatty_acids = Attribute("Omega-6 fatty acids", target=17)
+		self.total_fiber = Attribute("Total fiber", target=21)
+		self.soluble_fiber = Attribute("Soluble fiber", target=11)
+		self.insoluble_fiber = Attribute("Insoluble fiber", target=10)
+		self.cholesterol = Attribute("Cholesterol", target=0)
+		self.vitamin_a = Attribute("Vitamin A", target=3000, maximum=10000)
+		self.vitamin_b6 = Attribute("Vitamin B6", target=1.3, maximum=100)
+		self.vitamin_b12 = Attribute("Vitamin B12", target=2.4)
+		self.vitamin_c = Attribute("Vitamin C", target=90, maximum=2000)
+		self.vitamin_d = Attribute("Vitamin D", target=600, maximum=4000)
+		self.vitamin_e = Attribute("Vitamin E", target=20, maximum=1000)
+		self.vitamin_k = Attribute("Vitamin K", target=120)
+		self.thiamin = Attribute("Thiamin", target=1.2)
+		self.riboflavin = Attribute("Riboflavin", target=1.3)
+		self.niacin = Attribute("Niacin", target=16, maximum=35)
+		self.folate = Attribute("Folate", target=400, maximum=1000)
+		self.pantothenic_acid = Attribute("Pantothenic acid", target=5)
+		self.biotin = Attribute("Biotin", target=30)
+		self.choline = Attribute("Choline", target=550, maximum=3500)
+		self.calcium = Attribute("Calcium", target=1, maximum=2.5)
+		self.chloride = Attribute("Chloride", target=2.3, maximum=3.6)
+		self.chromium = Attribute("Chromium", target=35)
+		self.copper = Attribute("Copper", target=0.9, maximum=10)
+		self.iodine = Attribute("Iodine", target=150, maximum=1100)
+		self.iron = Attribute("Iron", target=8, maximum=45)
+		self.magnesium = Attribute("Magnesium", target=420)
+		self.manganese = Attribute("Manganese", target=2.3, maximum=11)
+		self.molybdenum = Attribute("Molybdenum", target=45, maximum=2000)
+		self.phosphorus = Attribute("Phosphorus", target=0.7, maximum=4)
+		self.potassium = Attribute("Potassium", target=3.5)
+		self.selenium = Attribute("Selenium", target=55, maximum=400)
+		self.sodium = Attribute("Sodium", target=1.5, maximum=2.3)
+		self.sulfur = Attribute("Sulfur", target=2)
+		self.zinc = Attribute("Zinc", target=11, maximum=40)
 
 class Ingredient:
 	def __init__(self, name_):
@@ -115,8 +157,14 @@ class Recipe:
 				return 0.0
 			
 			for attribute in ingredient.attributes:
-				if attribute > dri.attributes.minimum and attribute < dri.attributes.maximum:
-					earned_points += 1.0
+				if attribute > dri.attribute.minimum and attribute < dri.attribute.maximum:
+					adjusted_attribute = 0.0
+					
+					if attribute > dri.attribute.target:
+						adjusted_attribute = attribute - 2 * (attribute - dri.attribute.target)
+						earned_points += float(adjusted_attribute) / float(dri.attribute.target)
+					else:
+						earned_points += float(attribute) / float(dri.attribute.target)
 					
 				total_points_possible += 1.0
 				
@@ -158,6 +206,7 @@ class GA:
 			
 			for individual in self.population:
 				score = individual.fitness_score()
+				print score
 				
 				if score > self.fitness_threshold:
 					winner = individual
@@ -169,7 +218,7 @@ class GA:
 			scores.sort()
 			scores.reverse()
 			
-			fittest = scores[:0.1*len(scores)]
+			fittest = scores[:0.25*len(scores)]
 			
 			# mate fittest individuals
 			children = []
@@ -178,9 +227,28 @@ class GA:
 				p1 = fittest[random.randint(0, len(fittest)-1)]
 				p2 = fittest[random.randint(0, len(fittest)-1)]
 				
-				child = self.population_class(p1.DNA_first_half() + p2.DNA_second_half())
+				child_DNA = []
+				
+				for thing in p1.DNA_first_half():
+					if random.random() < mutability:
+						# add random ingredient
+					else:
+						child_DNA.append(thing)
+						
+				for thing in p2.DNA_second_half():
+					if random.random() < mutability:
+						# add random ingredient
+					else:
+						child_DNA.append(thing)
+				
+				child = self.population_class(child_DNA)
 				children.append(child)
 				
 			self.population = children
 			
 		return winner
+
+global_dri = DRI()
+ga = GA()
+winner = ga.evolve()
+print winner
