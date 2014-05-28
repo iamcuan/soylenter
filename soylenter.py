@@ -1,9 +1,14 @@
-import pickledb
+global_dri = None
 
-db = pickledb.load("db.db", False)
+class Attribute():
+	def __init__(self, name, minimum=0, maximum=9999999):
+		self.name = name
+		self.minimum = minimum
+		self.maximum = maximum
 
 class DRI:
-	pass
+	def __init__(self, name):
+		self.name = name
 
 class Ingredient:
 	def __init__(self, name_):
@@ -51,7 +56,7 @@ class Ingredient:
 		self.sulfur = float(raw_input("Sulfur (g): "))
 		self.zinc = float(raw_input("Zinc (mg): "))
 		
-		self.nutrition = [
+		self.attributes = [
 			self.calories,
 			self.carbohydrates,
 			self.protein,
@@ -95,17 +100,87 @@ class Ingredient:
 			self.sulfur,
 			self.zinc,
 		]
-		
-		try:
-			db.ladd("Ingredients", self)
-		except:
-			db.lcreate("Ingredients")
-			db.ladd("Ingredients", self)
-			
-		db.dump()
 
 class Recipe:
-	pass
+	def __init__(self, ingredients=[], dri=global_dri):
+		self.ingredients = ingredients
+		self.dri = dri
+		
+	def fitness_score():
+		total_points_possible = 0.0
+		earned_points = 0.0
+		
+		for ingredient in self.ingredients:
+			if ingredient in dri.allergens:
+				return 0.0
+			
+			for attribute in ingredient.attributes:
+				if attribute > dri.attributes.minimum and attribute < dri.attributes.maximum:
+					earned_points += 1.0
+					
+				total_points_possible += 1.0
+				
+		return earned_points / total_points_possible
+		
+	def DNA_first_half():
+		return self.ingredients[:len(self.ingredients)/2]
+		
+	def DNA_second_half():
+		return self.ingredients[len(self.ingredients)/2:]
 	
 class GA:
-	pass
+	"""
+	Classes on which this genetic algorithm can work
+	must implement three methods:
+		fitness_score()
+		DNA_first_half()
+		DNA_second_half()
+	"""
+	
+	def __init__(self, population_class=None, population_size=100, mutability=0.01, fitness_threshold=0.90):
+		self.population_class = population_class
+		self.population_size = population_size
+		self.mutability = mutability
+		self.fitness_threshold = fitness_threshold
+		
+		self.population = []
+		
+		for i in range(0, population_size):
+			self.population.append(population_class())
+		
+	def evolve(self):
+		unfit = True
+		winner = None
+		
+		while unfit:
+			# test individual fitness
+			scores = []
+			
+			for individual in self.population:
+				score = individual.fitness_score()
+				
+				if score > self.fitness_threshold:
+					winner = individual
+					unfit = False
+					
+				scores.append([score, individual])
+				
+			# select fittest individuals
+			scores.sort()
+			scores.reverse()
+			
+			fittest = scores[:0.1*len(scores)]
+			
+			# mate fittest individuals
+			children = []
+			
+			while len(children) < len(self.population):
+				p1 = fittest[random.randint(0, len(fittest)-1)]
+				p2 = fittest[random.randint(0, len(fittest)-1)]
+				
+				child = self.population_class(p1.DNA_first_half() + p2.DNA_second_half())
+				children.append(child)
+				
+			self.population = children
+			
+		return winner
