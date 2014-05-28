@@ -8,7 +8,7 @@ class Attribute():
 
 class DRI:
 	def __init__(self, name):
-		self.name = name
+		pass
 
 class Ingredient:
 	def __init__(self, name_):
